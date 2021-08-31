@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+  - name: Install tfenv
+    include_role:
+      name: "giner.tfenv"

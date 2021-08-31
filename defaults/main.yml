@@ -1,0 +1,4 @@
+# Variables without explicit default values
+#   tfenv_user:    # defaults to {{ ansible_user }}
+#   tfenv_dir:     # defaults to {{ tfenv_user }}/.tfenv
+#   tfenv_bindir:  # defaults to ~/bin

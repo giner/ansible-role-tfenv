@@ -1,0 +1,74 @@
+---
+- name: Install dependencies
+  package:
+    name:
+    - git
+    - curl
+    - unzip
+  become: yes
+
+- name: Set default tfenv_user
+  set_fact:
+    tfenv_user: "{{ ansible_user_id }}"
+  when: tfenv_user is not defined
+
+- name: Set tfenv_user_home variable
+  block:
+  - name: "Read user's entry"
+    getent:
+      database: passwd
+      key: "{{ tfenv_user }}"
+      split: ':'
+  - name: "Set tfenv_user_home (based on getent passwd)"
+    set_fact:
+      tfenv_user_home: "{{ getent_passwd[tfenv_user][4] }}"
+
+- name: Set default tfenv_dir
+  set_fact:
+    tfenv_dir: "{{ tfenv_user_home ~ '/.tfenv' }}"
+  when: tfenv_dir is not defined
+
+- name: Set default tfenv_bindir
+  set_fact:
+    tfenv_bindir: "{{ tfenv_user_home ~ '/bin' }}"
+  when: tfenv_bindir is not defined
+
+- name: Install tfenv
+  block:
+  - name: "Clone tfenv repo"
+    environment:
+      TMPDIR: "{{ tfenv_user_home }}"
+    git:
+      repo: https://github.com/tfutils/tfenv
+      dest: "{{ tfenv_dir }}"
+      version: master
+  - name: Create tfenv_bindir
+    file:
+      path: "{{ tfenv_bindir }}"
+      state: directory
+      mode: '0755'
+  - name: Create symlink to tfenv in tfenv_bindir
+    file:
+      src: "{{ tfenv_dir }}/bin/tfenv"
+      dest: "{{ tfenv_bindir }}/tfenv"
+      state: link
+  - name: Create symlink to terraform in tfenv_bindir
+    file:
+      src: "{{ tfenv_dir }}/bin/terraform"
+      dest: "{{ tfenv_bindir }}/terraform"
+      state: link
+  become_user: "{{ tfenv_user }}"
+
+- name: Install Terraform
+  block:
+  - name: Check if Terraform is installed
+    command: "{{ tfenv_bindir }}/tfenv version-name"
+    register: tfenv_version_name_result
+    changed_when: tfenv_version_name_result.rc == 1
+    failed_when: tfenv_version_name_result.rc not in [0, 1]
+  - name: Install Terraform binary
+    shell:
+      cmd: "{{ tfenv_bindir }}/tfenv install && {{ tfenv_bindir }}/tfenv use"
+      chdir: "{{ tfenv_user_home }}"
+    when: tfenv_version_name_result is changed
+  become_user: "{{ tfenv_user }}"
