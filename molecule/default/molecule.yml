@@ -4,8 +4,8 @@ dependency:
 driver:
   name: docker
 platforms:
-  - name: ubuntu-20.04-default
-    image: ubuntu:20.04
+  - name: instance
+    image: ${MOLECULE_DISTRO:-ubuntu:20.04}
 lint: |
   set -e
   yamllint .
