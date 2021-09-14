@@ -1,3 +1,5 @@
+[![Run tests](https://github.com/giner/ansible-role-tfenv/actions/workflows/test.yml/badge.svg)](https://github.com/giner/ansible-role-tfenv/actions/workflows/test.yml) [![Release to Galaxy](https://github.com/giner/ansible-role-tfenv/actions/workflows/release.yml/badge.svg)](https://github.com/giner/ansible-role-tfenv/actions/workflows/release.yml)
+
 # Ansible Role: tfenv
 
 Installs tfenv and Terraform into a user's home or a custom directory
