@@ -34,6 +34,7 @@
   when: tfenv_bindir is not defined
 
 - name: Install tfenv
+  become_user: "{{ tfenv_user }}"
   block:
   - name: "Clone tfenv repo"
     environment:
@@ -57,9 +58,9 @@
       src: "{{ tfenv_dir }}/bin/terraform"
       dest: "{{ tfenv_bindir }}/terraform"
       state: link
-  become_user: "{{ tfenv_user }}"
 
 - name: Install Terraform
+  become_user: "{{ tfenv_user }}"
   block:
   - name: Check if Terraform is installed
     ansible.builtin.command: "{{ tfenv_bindir }}/tfenv version-name"
@@ -71,4 +72,3 @@
       cmd: "{{ tfenv_bindir }}/tfenv install && {{ tfenv_bindir }}/tfenv use"
       chdir: "{{ tfenv_user_home }}"
     when: tfenv_version_name_result is changed
-  become_user: "{{ tfenv_user }}"
