@@ -8,14 +8,11 @@ on:
   schedule:
     - cron: "26 5 * * 2"
 
-defaults:                             # TODO: Remove after the fix is released, see
-  run:                                #       https://github.com/ansible-community/molecule/pull/3409
-    working-directory: 'giner.tfenv'  #
-
 jobs:
   molecule:
     name: Molecule test
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
         distro:
@@ -24,20 +21,35 @@ jobs:
         ansible:
           - ansible
           - ansible==2.9.*
+
+    env:
+      WORKDIR: ${{ matrix.ansible == 'ansible==2.9.*' && 'giner.tfenv' }}
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKDIR }}  # https://github.com/ansible-community/molecule/pull/3409
+
     steps:
       - name: Check out
         uses: actions/checkout@v3
-        with:                   # TODO: Remove after the fix is released, see
-          path: 'giner.tfenv'   #       https://github.com/ansible-community/molecule/pull/3409
+        with:
+          path: ${{ env.WORKDIR }}  # https://github.com/ansible-community/molecule/pull/3409
+
       - name: Set up Python 3
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+
       - name: Install test dependencies
+        if: matrix.ansible != 'ansible==2.9.*'
         run: python3 -m pip install "${{ matrix.ansible }}" -Ur requirements-molecule.txt
-      - name: Install ansible collections required for Ansible 2.9
+
+      - name: Install test dependencies for Ansible 2.9
         if: matrix.ansible == 'ansible==2.9.*'
-        run: ansible-galaxy collection install community.docker
+        run: |
+          python3 -m pip install "${{ matrix.ansible }}" -Ur requirements-molecule-ansible-2.9.txt
+          ansible-galaxy collection install community.docker
+
       - name: Run Molecule tests
         run: molecule test --all
         env:
