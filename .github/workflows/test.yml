@@ -31,19 +31,19 @@ jobs:
 
     steps:
       - name: Check out
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: ${{ env.WORKDIR }}  # https://github.com/ansible-community/molecule/pull/3409
 
       - name: Set up Python 3
         if: matrix.ansible != 'ansible==2.9.*'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
       - name: Set up Python 3 for Ansible 2.9
         if: matrix.ansible == 'ansible==2.9.*'
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11.x'
 
