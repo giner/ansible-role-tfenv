@@ -16,46 +16,23 @@ jobs:
     strategy:
       matrix:
         distro:
+          - ubuntu:24.04
           - ubuntu:22.04
-          - ubuntu:20.04
         ansible:
           - ansible
-          - ansible==2.9.*
-
-    env:
-      WORKDIR: ${{ matrix.ansible == 'ansible==2.9.*' && 'giner.tfenv' }}
-
-    defaults:
-      run:
-        working-directory: ${{ env.WORKDIR }}  # https://github.com/ansible-community/molecule/pull/3409
+          - ansible==11.*
 
     steps:
       - name: Check out
         uses: actions/checkout@v4
-        with:
-          path: ${{ env.WORKDIR }}  # https://github.com/ansible-community/molecule/pull/3409
 
       - name: Set up Python 3
-        if: matrix.ansible != 'ansible==2.9.*'
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Set up Python 3 for Ansible 2.9
-        if: matrix.ansible == 'ansible==2.9.*'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11.x'
-
       - name: Install test dependencies
-        if: matrix.ansible != 'ansible==2.9.*'
         run: python3 -m pip install "${{ matrix.ansible }}" -Ur requirements-molecule.txt
-
-      - name: Install test dependencies for Ansible 2.9
-        if: matrix.ansible == 'ansible==2.9.*'
-        run: |
-          python3 -m pip install "${{ matrix.ansible }}" -Ur requirements-molecule-ansible-2.9.txt
-          ansible-galaxy collection install community.docker
 
       - name: Run Molecule tests
         run: molecule test --all
